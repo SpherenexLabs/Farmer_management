@@ -50,8 +50,6 @@ export const getMarketPrices = async (commodity = 'rice', state = 'Karnataka') =
     
   } catch (error) {
     console.error('Error fetching market prices:', error.message);
-    console.warn('⚠️ Backend server not running. Start with: cd server && npm start');
-    console.warn('Falling back to sample data');
     return getSampleMarketData(commodity);
   }
 };
@@ -60,11 +58,6 @@ export const getPriceTrends = async (commodity, days = 30) => {
   try {
     const commodityName = COMMODITY_CODES[commodity.toLowerCase()] || commodity;
     
-    // If no API available (local dev without vercel dev), use sample data directly
-    if (!BACKEND_API) {
-      console.log(`📊 Local dev mode - using generated trend data for ${commodityName}`);
-      return generateTrendData(commodity, days);
-    }
     console.log(`Fetching REAL price trends for ${commodityName} (${days} days)`);
     
     // Call backend proxy for historical data
@@ -84,7 +77,6 @@ export const getPriceTrends = async (commodity, days = 30) => {
     return generateTrendData(commodity, days);
   } catch (error) {
     console.error('Error fetching price trends:', error);
-    console.warn('⚠️ Backend server not running. Start with: cd server && npm start');
     return generateTrendData(commodity, days);
   }
 };
