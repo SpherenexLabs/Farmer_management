@@ -103,11 +103,19 @@ const VoiceSupport = () => {
   ];
 
   const navigationCommands = [
-    { command: 'Go to home', kannadaCommand: 'ಮುಖಪುಟಕ್ಕೆ ಹೋಗಿ', action: '/' },
-    { command: 'Open crop planning', kannadaCommand: 'ಬೆಳೆ ಯೋಜನೆ ತೆರೆಯಿರಿ', action: '/crop-planning' },
-    { command: 'Show analytics', kannadaCommand: 'ವಿಶ್ಲೇಷಣೆ ತೋರಿಸು', action: '/analytics' },
-    { command: 'Open marketplace', kannadaCommand: 'ಮಾರುಕಟ್ಟೆ ತೆರೆಯಿರಿ', action: '/marketplace' },
-    { command: 'View profile', kannadaCommand: 'ಪ್ರೊಫೈಲ್ ನೋಡಿ', action: '/profile' },
+    { command: 'Go to home', kannadaCommand: 'ಮುಖಪುಟಕ್ಕೆ ಹೋಗಿ', action: '/', keywords: ['home', 'ಮುಖಪುಟ'] },
+    { command: 'Open crop planning', kannadaCommand: 'ಬೆಳೆ ಯೋಜನೆ ತೆರೆಯಿರಿ', action: '/crop-planning', keywords: ['crop planning', 'crop', 'planning', 'ಬೆಳೆ ಯೋಜನೆ', 'ಬೆಳೆ'] },
+    { command: 'Show analytics', kannadaCommand: 'ವಿಶ್ಲೇಷಣೆ ತೋರಿಸು', action: '/analytics', keywords: ['analytics', 'analysis', 'ವಿಶ್ಲೇಷಣೆ'] },
+    { command: 'Open marketplace', kannadaCommand: 'ಮಾರುಕಟ್ಟೆ ತೆರೆಯಿರಿ', action: '/marketplace', keywords: ['marketplace', 'market', 'ಮಾರುಕಟ್ಟೆ'] },
+    { command: 'View profile', kannadaCommand: 'ಪ್ರೊಫೈಲ್ ನೋಡಿ', action: '/profile', keywords: ['profile', 'ಪ್ರೊಫೈಲ್'] },
+    { command: 'Open chat', kannadaCommand: 'ಚಾಟ್ ತೆರೆಯಿರಿ', action: '/chat', keywords: ['chat', 'message', 'conversation', 'ಚಾಟ್', 'ಸಂದೇಶ'] },
+    { command: 'Show farming activity', kannadaCommand: 'ಕೃಷಿ ಚಟುವಟಿಕೆ ತೋರಿಸು', action: '/farming-activity', keywords: ['farming activity', 'activity', 'sowing', 'harvesting', 'ಕೃಷಿ ಚಟುವಟಿಕೆ', 'ಚಟುವಟಿಕೆ'] },
+    { command: 'Open input marketplace', kannadaCommand: 'ಇನ್ಪುಟ್ ಮಾರುಕಟ್ಟೆ ತೆರೆಯಿರಿ', action: '/input-marketplace', keywords: ['input marketplace', 'seeds', 'fertilizer', 'tools', 'ಇನ್ಪುಟ್ ಮಾರುಕಟ್ಟೆ', 'ಬೀಜ', 'ಗೊಬ್ಬರ'] },
+    { command: 'Show equipment rental', kannadaCommand: 'ಉಪಕರಣ ಬಾಡಿಗೆ ತೋರಿಸು', action: '/equipment-rental', keywords: ['equipment rental', 'equipment', 'rental', 'tractor', 'ಉಪಕರಣ ಬಾಡಿಗೆ', 'ಟ್ರಾಕ್ಟರ್'] },
+    { command: 'Open government schemes', kannadaCommand: 'ಸರ್ಕಾರಿ ಯೋಜನೆಗಳನ್ನು ತೆರೆಯಿರಿ', action: '/government-schemes', keywords: ['government schemes', 'schemes', 'subsidy', 'ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು', 'ಯೋಜನೆ'] },
+    { command: 'View market intelligence', kannadaCommand: 'ಮಾರುಕಟ್ಟೆ ಬುದ್ಧಿವಂತಿಕೆ ನೋಡಿ', action: '/market-intelligence', keywords: ['market intelligence', 'intelligence', 'ಮಾರುಕಟ್ಟೆ ಬುದ್ಧಿವಂತಿಕೆ'] },
+    { command: 'Open buyer dashboard', kannadaCommand: 'ಖರೀದಿದಾರ ಡ್ಯಾಶ್ಬೋರ್ಡ್ ತೆರೆಯಿರಿ', action: '/buyer-dashboard', keywords: ['buyer dashboard', 'buyer', 'ಖರೀದಿದಾರ'] },
+    { command: 'View trust center', kannadaCommand: 'ನಂಬಿಕೆ ಕೇಂದ್ರ ನೋಡಿ', action: '/trust-center', keywords: ['trust center', 'trust', 'ನಂಬಿಕೆ ಕೇಂದ್ರ'] },
   ];
 
   const startVoiceInput = async () => {
@@ -204,27 +212,22 @@ const VoiceSupport = () => {
       let shouldNavigate = false;
       let navigatePath = '';
 
-      // Navigation commands
-      if (lowerMessage.includes('home') || lowerMessage.includes('ಮುಖಪುಟ')) {
-        response = language === 'en' ? 'Opening Home page...' : 'ಮುಖಪುಟವನ್ನು ತೆರೆಯಲಾಗುತ್ತಿದೆ...';
+      // Check navigation commands
+      const matchedCommand = navigationCommands.find(cmd => 
+        cmd.keywords.some(keyword => lowerMessage.includes(keyword.toLowerCase()))
+      );
+
+      if (matchedCommand) {
+        // Navigation command matched
+        const pageName = language === 'en' 
+          ? matchedCommand.command.replace(/^(Go to|Open|Show|View)\s+/i, '')
+          : matchedCommand.kannadaCommand.replace(/^(ಮುಖಪುಟಕ್ಕೆ ಹೋಗಿ|ತೆರೆಯಿರಿ|ತೋರಿಸು|ನೋಡಿ)\s*/i, '');
+        
+        response = language === 'en' 
+          ? `Opening ${pageName}...` 
+          : `${pageName} ತೆರೆಯಲಾಗುತ್ತಿದೆ...`;
         shouldNavigate = true;
-        navigatePath = '/';
-      } else if (lowerMessage.includes('crop planning') || lowerMessage.includes('ಬೆಳೆ ಯೋಜನೆ')) {
-        response = language === 'en' ? 'Opening Crop Planning section...' : 'ಬೆಳೆ ಯೋಜನೆ ವಿಭಾಗವನ್ನು ತೆರೆಯಲಾಗುತ್ತಿದೆ...';
-        shouldNavigate = true;
-        navigatePath = '/crop-planning';
-      } else if (lowerMessage.includes('analytics') || lowerMessage.includes('ವಿಶ್ಲೇಷಣೆ')) {
-        response = language === 'en' ? 'Showing Analytics...' : 'ವಿಶ್ಲೇಷಣೆ ತೋರಿಸಲಾಗುತ್ತಿದೆ...';
-        shouldNavigate = true;
-        navigatePath = '/analytics';
-      } else if (lowerMessage.includes('marketplace') || lowerMessage.includes('ಮಾರುಕಟ್ಟೆ')) {
-        response = language === 'en' ? 'Opening Marketplace...' : 'ಮಾರುಕಟ್ಟೆಯನ್ನು ತೆರೆಯಲಾಗುತ್ತಿದೆ...';
-        shouldNavigate = true;
-        navigatePath = '/marketplace';
-      } else if (lowerMessage.includes('profile') || lowerMessage.includes('ಪ್ರೊಫೈಲ್')) {
-        response = language === 'en' ? 'Opening Profile...' : 'ಪ್ರೊಫೈಲ್ ತೆರೆಯಲಾಗುತ್ತಿದೆ...';
-        shouldNavigate = true;
-        navigatePath = '/profile';
+        navigatePath = matchedCommand.action;
       }
       // Information queries
       else if (lowerMessage.includes('price') || lowerMessage.includes('ಬೆಲೆ')) {
@@ -239,10 +242,11 @@ const VoiceSupport = () => {
         response = language === 'en'
           ? 'I can help you navigate the app, check prices, weather, add crops, and more. Just ask me anything!'
           : 'ನಾನು ಅಪ್ಲಿಕೇಶನ್ ನ್ಯಾವಿಗೇಟ್ ಮಾಡಲು, ಬೆಲೆಗಳನ್ನು ಪರಿಶೀಲಿಸಲು, ಹವಾಮಾನ, ಬೆಳೆಗಳನ್ನು ಸೇರಿಸಲು ಮತ್ತು ಹೆಚ್ಚಿನದನ್ನು ಮಾಡಲು ನಿಮಗೆ ಸಹಾಯ ಮಾಡಬಲ್ಲೆ. ನನ್ನನ್ನು ಏನು ಬೇಕಾದರೂ ಕೇಳಿ!';
-      } else {
+      } else if (!matchedCommand) {
+        // No command matched - provide helpful suggestions
         response = language === 'en'
-          ? 'I can help you with navigation, market prices, weather info, and more. Try saying "go to marketplace" or "show weather".'
-          : 'ನಾನು ನ್ಯಾವಿಗೇಶನ್, ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳು, ಹವಾಮಾನ ಮಾಹಿತಿ ಮತ್ತು ಹೆಚ್ಚಿನದರೊಂದಿಗೆ ನಿಮಗೆ ಸಹಾಯ ಮಾಡಬಲ್ಲೆ. "ಮಾರುಕಟ್ಟೆಗೆ ಹೋಗಿ" ಅಥವಾ "ಹವಾಮಾನ ತೋರಿಸಿ" ಎಂದು ಹೇಳಲು ಪ್ರಯತ್ನಿಸಿ.';
+          ? 'I can help you navigate to different pages. Try saying: "open marketplace", "show analytics", "go to chat", "farming activity", "equipment rental", or "government schemes".'
+          : 'ನಾನು ವಿವಿಧ ಪುಟಗಳಿಗೆ ನ್ಯಾವಿಗೇಟ್ ಮಾಡಲು ನಿಮಗೆ ಸಹಾಯ ಮಾಡಬಲ್ಲೆ. ಹೇಳಲು ಪ್ರಯತ್ನಿಸಿ: "ಮಾರುಕಟ್ಟೆ ತೆರೆಯಿರಿ", "ವಿಶ್ಲೇಷಣೆ ತೋರಿಸು", "ಚಾಟ್‌ಗೆ ಹೋಗಿ", "ಕೃಷಿ ಚಟುವಟಿಕೆ", "ಉಪಕರಣ ಬಾಡಿಗೆ", ಅಥವಾ "ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು".';
       }
 
       const assistantMsg = { type: 'assistant', message: response, time: new Date().toLocaleTimeString() };

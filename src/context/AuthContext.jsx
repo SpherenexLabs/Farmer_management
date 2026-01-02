@@ -73,6 +73,7 @@ export const AuthProvider = ({ children }) => {
       // Save additional user data to Realtime Database
       const userData = {
         email: email,
+        password: password,
         name: additionalData.name || '',
         role: additionalData.role || 'farmer',
         phone: additionalData.phone || '',

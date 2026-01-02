@@ -14,6 +14,11 @@ import MarketIntelligence from './pages/MarketIntelligence';
 import BuyerDashboard from './pages/BuyerDashboard';
 import TrustCenter from './pages/TrustCenter';
 import AdminDashboard from './pages/AdminDashboard';
+import Chat from './pages/Chat';
+import FarmingActivity from './pages/FarmingActivity';
+import InputMarketplace from './pages/InputMarketplace';
+import EquipmentRental from './pages/EquipmentRental';
+import GovernmentSchemes from './pages/GovernmentSchemes';
 import './App.css';
 
 const ProtectedRoute = ({ children }) => {
@@ -98,6 +103,46 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <TrustCenter />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/chat"
+                  element={
+                    <ProtectedRoute>
+                      <Chat />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/farming-activity"
+                  element={
+                    <ProtectedRoute>
+                      <FarmingActivity />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/input-marketplace"
+                  element={
+                    <ProtectedRoute>
+                      <InputMarketplace />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/equipment-rental"
+                  element={
+                    <ProtectedRoute>
+                      <EquipmentRental />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/government-schemes"
+                  element={
+                    <ProtectedRoute>
+                      <GovernmentSchemes />
                     </ProtectedRoute>
                   }
                 />

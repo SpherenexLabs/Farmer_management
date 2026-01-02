@@ -1,8 +1,10 @@
-// AGMARKNET API Integration for Market Prices
+// AGMARKNET API Integration for Market Prices via Vercel Serverless Functions
 // Real Government API: Variety-wise Daily Market Prices Data of Commodity
 
-const AGMARKNET_BASE = 'https://api.data.gov.in/resource/35985678-0d79-46b4-9ed6-6f13308a1d24';
-const API_KEY = '579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b'; // Sample key from data.gov.in
+// Support both local Node.js server and Vercel serverless functions
+const BACKEND_API = import.meta.env.PROD 
+  ? '/api'  // Production: Vercel serverless functions
+  : 'http://localhost:5000/api';  // Development: Node.js server
 
 // Map crop names to commodity codes
 const COMMODITY_CODES = {
@@ -19,21 +21,10 @@ export const getMarketPrices = async (commodity = 'rice', state = 'Karnataka') =
   try {
     const commodityName = COMMODITY_CODES[commodity.toLowerCase()] || commodity;
     
-    console.log(`Fetching market prices for ${commodityName} in ${state}`);
+    console.log(`Fetching REAL market prices for ${commodityName} in ${state}`);
     
-    // NOTE: Direct browser access to government APIs is blocked by CORS
-    // The API requires backend server access. Using enhanced sample data for now.
-    // To enable real API: Set up Node.js backend and proxy the request
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    // Return realistic sample data based on commodity
-    return getSampleMarketData(commodity);
-    
-    /* PRODUCTION CODE - Uncomment when backend proxy is ready:
-    
-    const url = `${AGMARKNET_BASE}?api-key=${API_KEY}&format=json&limit=10&filters[state]=${state}&filters[commodity]=${commodityName}`;
+    // Call backend proxy server to fetch real government data
+    const url = `${BACKEND_API}/market-prices?commodity=${encodeURIComponent(commodityName)}&state=${encodeURIComponent(state)}&limit=10`;
     
     const response = await fetch(url, {
       method: 'GET',
@@ -43,35 +34,58 @@ export const getMarketPrices = async (commodity = 'rice', state = 'Karnataka') =
     });
 
     if (!response.ok) {
-      throw new Error(`API returned ${response.status}`);
+      console.warn(`Backend API returned ${response.status}, falling back to sample data`);
+      return getSampleMarketData(commodity);
     }
 
-    const data = await response.json();
+    const result = await response.json();
     
-    if (data && data.records && data.records.length > 0) {
-      return processRealMarketData(data.records, commodity);
+    if (result.success && result.data && result.data.records && result.data.records.length > 0) {
+      console.log(`✅ Received ${result.data.records.length} REAL market records`);
+      return processRealMarketData(result.data.records, commodity);
+    } else {
+      console.warn('No real data available, using sample data');
+      return getSampleMarketData(commodity);
     }
-    */
     
   } catch (error) {
-    console.error('Error fetching market prices:', error);
+    console.error('Error fetching market prices:', error.message);
+    console.warn('⚠️ Backend server not running. Start with: cd server && npm start');
+    console.warn('Falling back to sample data');
     return getSampleMarketData(commodity);
   }
 };
 
 export const getPriceTrends = async (commodity, days = 30) => {
   try {
-    // Fetch historical price data
-    // Note: Actual implementation depends on API availability
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
+    const commodityName = COMMODITY_CODES[commodity.toLowerCase()] || commodity;
     
-    // Mock implementation - replace with actual API call
+    // If no API available (local dev without vercel dev), use sample data directly
+    if (!BACKEND_API) {
+      console.log(`📊 Local dev mode - using generated trend data for ${commodityName}`);
+      return generateTrendData(commodity, days);
+    }
+    console.log(`Fetching REAL price trends for ${commodityName} (${days} days)`);
+    
+    // Call backend proxy for historical data
+    const url = `${BACKEND_API}/price-trends?commodity=${encodeURIComponent(commodityName)}&days=${days}`;
+    
+    const response = await fetch(url);
+    
+    if (response.ok) {
+      const result = await response.json();
+      if (result.success && result.data && result.data.records) {
+        console.log(`✅ Received ${result.data.records.length} REAL trend records`);
+        return processTrendData(result.data.records, days);
+      }
+    }
+    
+    console.warn('Using generated trend data');
     return generateTrendData(commodity, days);
   } catch (error) {
     console.error('Error fetching price trends:', error);
-    return [];
+    console.warn('⚠️ Backend server not running. Start with: cd server && npm start');
+    return generateTrendData(commodity, days);
   }
 };
 
@@ -202,6 +216,27 @@ const generateTrendData = (commodity, days) => {
   }
   
   return data;
+};
+
+// Process trend data from real API
+const processTrendData = (records, days) => {
+  if (!records || records.length === 0) {
+    return [];
+  }
+  
+  // Sort by date
+  const sortedRecords = records.sort((a, b) => 
+    new Date(a.arrival_date) - new Date(b.arrival_date)
+  );
+  
+  // Extract price trends
+  return sortedRecords.slice(0, days).map((record, index) => ({
+    day: formatDate(record.arrival_date) || `Day ${index + 1}`,
+    price: parseFloat(record.modal_price) || 0,
+    market: record.market,
+    minPrice: parseFloat(record.min_price) || 0,
+    maxPrice: parseFloat(record.max_price) || 0
+  }));
 };
 
 export const predictPrices = async (commodity, days = 14) => {

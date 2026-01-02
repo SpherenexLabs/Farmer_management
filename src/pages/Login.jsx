@@ -190,16 +190,6 @@ const Login = () => {
               />
             </div>
 
-            {isLogin && (
-              <div className="form-footer">
-                <label className="checkbox-label">
-                  <input type="checkbox" />
-                  <span>Remember me</span>
-                </label>
-                <a href="#" className="forgot-link">Forgot Password?</a>
-              </div>
-            )}
-
             <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
               {loading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Create Account')}
             </button>
