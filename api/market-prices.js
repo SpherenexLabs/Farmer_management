@@ -17,13 +17,19 @@ export default async function handler(req, res) {
 
     const url = `${AGMARKNET_BASE}?api-key=${API_KEY}&format=json&limit=${limit}&filters[state]=${encodeURIComponent(state)}&filters[commodity]=${encodeURIComponent(commodity)}`;
 
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+
     const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
         'User-Agent': 'FarmerManagementSystem/1.0'
-      }
+      },
+      signal: controller.signal
     });
+
+    clearTimeout(timeout);
 
     if (!response.ok) {
       throw new Error(`API returned ${response.status}`);
@@ -40,9 +46,10 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('Error fetching market prices:', error);
-    return res.status(500).json({
+    return res.status(200).json({
       success: false,
-      error: error.message
+      error: error.message,
+      data: { records: [] }
     });
   }
 }
