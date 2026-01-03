@@ -43,6 +43,11 @@ export default async function handler(req, res) {
       signal: controller.signal
     }).finally(() => clearTimeout(timeoutId));
 
+    if (response.status === 429) {
+      console.warn('Government API rate-limited (429). Returning empty records to trigger cache/sample fallback.');
+      return res.status(200).json({ success: false, error: 'API returned 429', data: { records: [] } });
+    }
+
     if (!response.ok) {
       console.error(`API returned ${response.status}`);
       throw new Error(`API returned ${response.status}`);
