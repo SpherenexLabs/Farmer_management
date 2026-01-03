@@ -1,5 +1,6 @@
 // AGMARKNET API Integration for Market Prices via Vercel Serverless Functions
 // Real Government API: Variety-wise Daily Market Prices Data of Commodity
+import { getCachedMarketData } from './marketDataCache';
 
 // Support both local Node.js server and Vercel serverless functions
 const BACKEND_API = import.meta.env.PROD 
@@ -21,7 +22,16 @@ export const getMarketPrices = async (commodity = 'rice', state = 'Karnataka') =
   try {
     const commodityName = COMMODITY_CODES[commodity.toLowerCase()] || commodity;
     
-    console.log(`Fetching REAL market prices for ${commodityName} in ${state}`);
+    console.log(`Fetching market prices for ${commodityName} in ${state}`);
+    
+    // First, try to get cached data from Firebase (instant)
+    const cachedData = await getCachedMarketData(commodityName, state);
+    if (cachedData && cachedData.records && cachedData.records.length > 0) {
+      console.log(`✅ Using REAL cached data: ${cachedData.records.length} records`);
+      return processRealMarketData(cachedData.records, commodity);
+    }
+    
+    console.log('No cache found, trying backend API...');
     
     // Call backend proxy server to fetch real government data
     const url = `${BACKEND_API}/market-prices?commodity=${encodeURIComponent(commodityName)}&state=${encodeURIComponent(state)}&limit=10`;
@@ -30,7 +40,8 @@ export const getMarketPrices = async (commodity = 'rice', state = 'Karnataka') =
       method: 'GET',
       headers: {
         'Accept': 'application/json'
-      }
+      },
+      timeout: 8000 // 8 second client timeout
     });
 
     if (!response.ok) {

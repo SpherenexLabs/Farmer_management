@@ -19,6 +19,7 @@ import FarmingActivity from './pages/FarmingActivity';
 import InputMarketplace from './pages/InputMarketplace';
 import EquipmentRental from './pages/EquipmentRental';
 import GovernmentSchemes from './pages/GovernmentSchemes';
+import AdminCacheUpdate from './pages/AdminCacheUpdate';
 import './App.css';
 
 const ProtectedRoute = ({ children }) => {
@@ -143,6 +144,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <GovernmentSchemes />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/cache-update"
+                  element={
+                    <ProtectedRoute>
+                      <AdminCacheUpdate />
                     </ProtectedRoute>
                   }
                 />
