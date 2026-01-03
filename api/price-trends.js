@@ -30,17 +30,13 @@ export default async function handler(req, res) {
 
     console.log('Fetching trends from:', url);
 
-    // Add timeout
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 25000); // 25 second timeout
-
+    // No AbortController - let Vercel's 30s timeout handle it
     const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
         'User-Agent': 'Mozilla/5.0'
-      },
-      signal: controller.signal
+      }
     });
 
     clearTimeout(timeout);
