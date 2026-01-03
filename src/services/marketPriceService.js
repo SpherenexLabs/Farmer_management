@@ -39,12 +39,16 @@ export const getMarketPrices = async (commodity = 'rice', state = 'Karnataka') =
     }
 
     const result = await response.json();
+    console.log('API Response:', result);
     
-    if (result.success && result.data && result.data.records && result.data.records.length > 0) {
-      console.log(`✅ Received ${result.data.records.length} REAL market records`);
-      return processRealMarketData(result.data.records, commodity);
+    // Check if we got real data
+    const records = result.data?.records || result.records || [];
+    
+    if (result.success && records.length > 0) {
+      console.log(`✅ Received ${records.length} REAL market records`);
+      return processRealMarketData(records, commodity);
     } else {
-      console.warn('No real data available, using sample data');
+      console.warn('No real data available, using sample data. Response:', result);
       return getSampleMarketData(commodity);
     }
     

@@ -2493,8 +2493,26 @@ html, body, #root {
 .price-main h3 {
   font-size: 1.125rem;
   font-weight: 500;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   opacity: 0.95;
+}
+
+.location-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  backdrop-filter: blur(10px);
+}
+
+.location-badge svg {
+  width: 16px;
+  height: 16px;
 }
 
 .price-display {

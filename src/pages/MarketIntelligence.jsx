@@ -96,6 +96,10 @@ const MarketIntelligence = () => {
           <div className="current-price-card">
             <div className="price-main">
               <h3>Current Average Price</h3>
+              <div className="location-badge">
+                <MapPin size={16} />
+                <span>Karnataka State Markets</span>
+              </div>
               <div className="price-display">
                 <span className="price-amount">₹{currentPriceData.current}</span>
                 <span className="price-unit">per quintal</span>

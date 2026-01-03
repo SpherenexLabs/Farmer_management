@@ -17,25 +17,23 @@ export default async function handler(req, res) {
 
     const url = `${AGMARKNET_BASE}?api-key=${API_KEY}&format=json&limit=100&filters[commodity]=${encodeURIComponent(commodity)}`;
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+    console.log('Fetching trends from:', url);
 
     const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
-        'User-Agent': 'FarmerManagementSystem/1.0'
-      },
-      signal: controller.signal
+        'User-Agent': 'Mozilla/5.0'
+      }
     });
 
-    clearTimeout(timeout);
-
     if (!response.ok) {
+      console.error(`API returned ${response.status}`);
       throw new Error(`API returned ${response.status}`);
     }
 
     const data = await response.json();
+    console.log('API Response:', data.records?.length || 0, 'records');
 
     return res.status(200).json({
       success: true,
@@ -45,7 +43,7 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('Error fetching price trends:', error);
+    console.error('Error fetching price trends:', error.message);
     return res.status(200).json({
       success: false,
       error: error.message,
