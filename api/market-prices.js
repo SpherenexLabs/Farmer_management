@@ -30,16 +30,18 @@ export default async function handler(req, res) {
 
     console.log('Fetching from:', url);
 
-    // No AbortController - let Vercel's 30s timeout handle it
+    // Abort after 23s so Vercel never hits 30s hard timeout (avoids 504)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 23000);
+
     const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
         'User-Agent': 'Mozilla/5.0'
-      }
-    });
-
-    clearTimeout(timeout);
+      },
+      signal: controller.signal
+    }).finally(() => clearTimeout(timeoutId));
 
     if (!response.ok) {
       console.error(`API returned ${response.status}`);
@@ -62,10 +64,11 @@ export default async function handler(req, res) {
     return res.status(200).json(result);
 
   } catch (error) {
+    const isAbort = error.name === 'AbortError';
     console.error('Error fetching market prices:', error.message);
-    return res.status(200).json({
+    return res.status(isAbort ? 200 : 200).json({
       success: false,
-      error: error.message,
+      error: isAbort ? 'Upstream API timed out after 23s' : error.message,
       data: { records: [] }
     });
   }
