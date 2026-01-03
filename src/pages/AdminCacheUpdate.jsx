@@ -1,18 +1,35 @@
 import { useState } from 'react';
-import { updateMarketCache } from '../services/marketDataCache';
 import '../App.css';
 
 function AdminCacheUpdate() {
   const [updating, setUpdating] = useState(false);
   const [status, setStatus] = useState('');
   const [lastUpdate, setLastUpdate] = useState(localStorage.getItem('lastCacheUpdate') || 'Never');
+  const commodities = ['Rice', 'Maize', 'Wheat', 'Cotton', 'Sugarcane'];
 
   const handleUpdateCache = async () => {
     setUpdating(true);
-    setStatus('Updating market data cache from government API...');
+    setStatus('Updating market data cache on server...');
     
     try {
-      await updateMarketCache();
+      for (const commodity of commodities) {
+        setStatus(`Fetching ${commodity}...`);
+        const resp = await fetch(`/api/update-cache?commodity=${encodeURIComponent(commodity)}&state=Karnataka`, {
+          method: 'POST'
+        });
+
+        const data = await resp.json().catch(() => ({ success: false, error: 'Invalid JSON' }));
+
+        if (data.success) {
+          setStatus(`✅ Cached ${commodity}: ${data.records || 0} records`);
+        } else {
+          setStatus(`⚠️ ${commodity}: ${data.error || 'No data'}`);
+        }
+
+        // small gap between commodities
+        await new Promise(r => setTimeout(r, 500));
+      }
+
       const now = new Date().toLocaleString();
       setLastUpdate(now);
       localStorage.setItem('lastCacheUpdate', now);
