@@ -12,6 +12,7 @@ function AdminCacheUpdate() {
     setStatus('Updating market data cache on server...');
     
     try {
+      let allSucceeded = true;
       for (const commodity of commodities) {
         setStatus(`Fetching ${commodity}...`);
         const resp = await fetch(`/api/update-cache?commodity=${encodeURIComponent(commodity)}&state=Karnataka`, {
@@ -24,16 +25,21 @@ function AdminCacheUpdate() {
           setStatus(`✅ Cached ${commodity}: ${data.records || 0} records`);
         } else {
           setStatus(`⚠️ ${commodity}: ${data.error || 'No data'}`);
+          allSucceeded = false;
         }
 
         // small gap between commodities
         await new Promise(r => setTimeout(r, 500));
       }
 
-      const now = new Date().toLocaleString();
-      setLastUpdate(now);
-      localStorage.setItem('lastCacheUpdate', now);
-      setStatus('✅ Cache updated successfully! All market data is now fresh.');
+      if (allSucceeded) {
+        const now = new Date().toLocaleString();
+        setLastUpdate(now);
+        localStorage.setItem('lastCacheUpdate', now);
+        setStatus('✅ Cache updated successfully! All market data is now fresh.');
+      } else {
+        setStatus('⚠️ Finished with some errors. See above messages.');
+      }
     } catch (error) {
       setStatus(`❌ Error: ${error.message}`);
     } finally {

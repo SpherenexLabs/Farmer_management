@@ -22,6 +22,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: result.success, records: result.records, commodity, state });
   } catch (error) {
     console.error('Error updating cache:', error.message);
-    return res.status(500).json({ success: false, error: error.message, commodity, state });
+    return res.status(200).json({ success: false, error: error.message, commodity, state });
   }
 }
