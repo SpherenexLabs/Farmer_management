@@ -1,5 +1,5 @@
 import { ref, set, get } from 'firebase/database';
-import { database } from '../firebase/config';
+import { database } from '../config/firebase';
 
 // Cache market data in Firebase for fast retrieval
 export const cacheMarketData = async (commodity, state, data) => {
